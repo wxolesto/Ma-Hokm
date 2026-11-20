@@ -16,6 +16,7 @@
 
 :root{--f:'SF Pro Display','SF Arabic',-apple-system,Roboto,sans-serif;--fg:#f4fbf6;--muted:#a9cdb8;--gold:#ffd166;--glass:rgba(255,255,255,.12);--stroke:rgba(255,255,255,.22);--hi:rgba(255,255,255,.35);--ease:cubic-bezier(.22,.61,.36,1);--t1:#25895a;--t2:#115236;--t3:#08301f}
 html[data-table=navy]{--t1:#2a6aa8;--t2:#133b66;--t3:#0a2140}
+html[data-table=purple]{--t1:#7a52b3;--t2:#43206f;--t3:#220f3d}html[data-table=teal]{--t1:#2a9d9a;--t2:#125653;--t3:#093533}html[data-table=char]{--t1:#565d68;--t2:#2c3038;--t3:#15181d}
 html[data-table=wine]{--t1:#a33a52;--t2:#661f33;--t3:#3a0f1d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--t3)}
@@ -89,6 +90,16 @@ svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-lin
 .tw.us{background:rgba(76,195,255,.9);color:#05263a}.tw.them{background:rgba(255,143,163,.92);color:#3d0a16}
 .tc.win0 .cd{box-shadow:0 0 0 3px #4cc3ff,0 0 22px rgba(76,195,255,.8)}.tc.win1 .cd{box-shadow:0 0 0 3px #ff8fa3,0 0 22px rgba(255,143,163,.8)}
 .stt.two{grid-template-columns:repeat(2,1fr);max-width:220px;margin-inline:auto;width:100%}.stt.two b{font-size:34px}
+#b_undo{position:fixed;left:12px;bottom:calc(142px + env(safe-area-inset-bottom));z-index:4;background:rgba(0,0,0,.35)}
+html[data-back=red] .cd.bk{background:repeating-linear-gradient(45deg,#8e1f33 0 3px,#a82a40 3px 6px)}
+html[data-back=gold] .cd.bk{background:repeating-linear-gradient(45deg,#6b4a12 0 3px,#8f6722 3px 6px);border-color:#f1dfa8}
+html[data-back=dark] .cd.bk{background:radial-gradient(circle at 50% 50%,#2c333c,#171b20);border-color:#c9a86a}
+html[data-face=big] .cd .r{font-size:calc(var(--cw)*.46);left:9%}html[data-face=big] .cd .m{top:calc(var(--cw)*.54);font-size:calc(var(--cw)*.3);left:10%}html[data-face=big] .cd .c{font-size:calc(var(--cw)*.5)}
+.rp{position:relative;height:196px;margin:4px 0}.rp .p{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px}.rp .p .cd{--cw:44px}.rp small{font-size:10.5px;color:var(--muted)}
+.rp .p0{left:50%;bottom:0;margin-left:-22px}.rp .p2{left:50%;top:0;margin-left:-22px}.rp .p1{right:14%;top:50%;margin-top:-34px}.rp .p3{left:14%;top:50%;margin-top:-34px}
+.rp .p.win0 .cd{box-shadow:0 0 0 3px #4cc3ff,0 0 16px rgba(76,195,255,.7)}.rp .p.win1 .cd{box-shadow:0 0 0 3px #ff8fa3,0 0 16px rgba(255,143,163,.7)}
+.rh{display:flex;flex-direction:column;gap:2px}.rh small.u{color:#7dd3ff}.rh small.t{color:#ff9fb2}.rh>div{display:flex;gap:2px;direction:ltr;min-height:32px;flex-wrap:nowrap}
+.mc{width:22px;height:32px;border-radius:4px;background:#fbf8f0;color:#1b1b1f;font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;flex:none}.mc.red{color:#c8283a}.mc i{font-style:normal;font-size:12px}.mc.hl{outline:2px solid var(--gold);outline-offset:-1px;transform:translateY(-3px)}
 </style>
 </head>
 <body>
@@ -99,6 +110,7 @@ svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-lin
   <div class="dots" id="dots"></div>
   <div class="tbl" id="tbl"></div>
   <div class="say" id="say"></div>
+  <button class="chip" id="b_undo" hidden>↶ برگشت</button>
   <div class="hand" id="hand"></div>
 </section>
 <div id="modal" hidden><div class="mb glass" id="mb"></div></div>
@@ -109,8 +121,8 @@ svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-lin
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY='hokm.v1';
-let ST={games:0,wins:0,rounds:0,rwins:0,kots:0,opts:{speed:1,target:7,table:'green',level:1}};
-try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j){ST=Object.assign(ST,j);ST.opts=Object.assign({speed:1,target:7,table:'green',level:1},j.opts||{})}}catch(e){}
+let ST={games:0,wins:0,rounds:0,rwins:0,kots:0,opts:{speed:1,target:7,table:'green',level:1,sound:1,back:'blue',face:'classic'},hist:[],lvs:{}};
+try{const j=JSON.parse(localStorage.getItem(KEY)||'null');if(j){ST=Object.assign(ST,j);ST.opts=Object.assign({speed:1,target:7,table:'green',level:1,sound:1,back:'blue',face:'classic'},j.opts||{})}}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(ST))}catch(e){}};
 const SU=['S','H','C','D'],SYM={S:'♠',H:'♥',D:'♦',C:'♣'},SN={S:'پیک',H:'دل',D:'خشت',C:'گشنیز'},RED={H:1,D:1};
 const RL=r=>({11:'J',12:'Q',13:'K',14:'A'})[r]||String(r);
@@ -123,11 +135,13 @@ const rnd=n=>Math.floor(Math.random()*n);
 let G=null,toastT=null;
 const IC={x:'<path d="M6 6l12 12M18 6L6 18"/>',menu:'<circle cx="5.500" cy="12" r="1.200"/><circle cx="12" cy="12" r="1.200"/><circle cx="18.500" cy="12" r="1.200"/>',bulb:'<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.500 10.900c.6.5 1 1.200 1 2.100h5c0-.9.4-1.600 1-2.100A6 6 0 0 0 12 3z"/>',back:'<path d="M3 12a9 9 0 1 0 3-6.700L3 8M3 3v5h5M12 8v4l3 2"/>'};
 const svg=n=>'<svg viewBox="0 0 24 24">'+IC[n]+'</svg>';
-document.documentElement.dataset.table=ST.opts.table;
+document.documentElement.dataset.table=ST.opts.table;document.documentElement.dataset.back=ST.opts.back;document.documentElement.dataset.face=ST.opts.face;
+if(!Array.isArray(ST.hist))ST.hist=[];if(!ST.lvs)ST.lvs={};
 
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),1700)}
-function modal(html,bind){const m=$('#modal'),b=$('#mb');b.innerHTML=html;m.hidden=false;if(bind)bind(b)}
-function closeModal(){$('#modal').hidden=true;$('#mb').innerHTML=''}
+let lastModal=null,rpT=null;
+function modal(html,bind){clearInterval(rpT);lastModal={html,bind};const m=$('#modal'),b=$('#mb');b.innerHTML=html;m.hidden=false;if(bind)bind(b)}
+function closeModal(){clearInterval(rpT);$('#modal').hidden=true;$('#mb').innerHTML=''}
 
 /* ---------- cards ---------- */
 function cardH(c,cls){const red=RED[c.s]?' red':'';return '<div class="cd'+red+(cls?' '+cls:'')+'"><span class="r">'+RL(c.r)+'</span><span class="m">'+SYM[c.s]+'</span><span class="c">'+SYM[c.s]+'</span></div>'}
@@ -137,6 +151,34 @@ const same=(a,b)=>a.s===b.s&&a.r===b.r;
 function sortHand(h,tr){const order=SU.slice();if(tr){order.splice(order.indexOf(tr),1);order.unshift(tr)}h.sort((a,b)=>order.indexOf(a.s)-order.indexOf(b.s)||b.r-a.r)}
 const legalFor=(h,trick)=>{if(!trick.length)return h.slice();const ls=trick[0].c.s,f=h.filter(c=>c.s===ls);return f.length?f:h.slice()};
 function winnerOf(trick,tr){let b=trick[0];for(const p of trick.slice(1)){if(p.c.s===b.c.s){if(p.c.r>b.c.r)b=p}else if(p.c.s===tr)b=p}return b}
+
+
+/* ---------- sound ---------- */
+let AC=null,NB=null;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}try{if(AC&&AC.state==='suspended')AC.resume()}catch(e){}return AC}
+function nbuf(a){if(!NB){NB=a.createBuffer(1,a.sampleRate*1,a.sampleRate);const d=NB.getChannelData(0);let b0=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;b0=.97*b0+.03*w*8;d[i]=(w*.6+b0*.4)}}return NB}
+function nz(a,t,dur,o){ // o:{type,f,f2,q,g,att,hp}
+  const s=a.createBufferSource();s.buffer=nbuf(a);s.loop=true;const fl=a.createBiquadFilter();fl.type=o.type||'bandpass';fl.frequency.setValueAtTime(o.f,t);if(o.f2)fl.frequency.exponentialRampToValueAtTime(o.f2,t+dur);fl.Q.value=o.q||.8;
+  const ga=a.createGain(),att=o.att||.002;ga.gain.setValueAtTime(.0001,t);ga.gain.exponentialRampToValueAtTime(o.g,t+att);ga.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  let n=fl;s.connect(fl);if(o.hp){const h=a.createBiquadFilter();h.type='highpass';h.frequency.value=o.hp;fl.connect(h);n=h}n.connect(ga);ga.connect(a.destination);s.start(t,Math.random()*.5);s.stop(t+dur+.03)}
+function tone(a,t,f,dur,g,type,f2){const o=a.createOscillator(),ga=a.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);ga.gain.setValueAtTime(0,t);ga.gain.linearRampToValueAtTime(g,t+.006);ga.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(ga);ga.connect(a.destination);o.start(t);o.stop(t+dur+.02)}
+function swish(a,t,dur,g){const v=.85+Math.random()*.3;nz(a,t,dur,{type:'bandpass',f:1100*v,f2:3600*v,q:.9,g:g||.5,att:dur*.45,hp:700})}
+function slap(a,t,g){g*=.8;const v=.9+Math.random()*.2;
+  nz(a,t,.03,{type:'highpass',f:2600*v,q:.5,g:.55*g,att:.001});
+  nz(a,t,.11,{type:'lowpass',f:900*v,q:.7,g:.9*g,att:.002});
+  tone(a,t,170*v,.09,.32*g,'sine',90)}
+function sfx(k,dur){
+  if(!ST.opts.sound)return;const a=ac();if(!a)return;const t=a.currentTime+.005;
+  if(k==='throw'){swish(a,t,Math.max(.12,(dur||.5)*.7),.55)}
+  else if(k==='card'){slap(a,t,1)}
+  else if(k==='flick'){swish(a,t,.09,.35)}
+  else if(k==='deal'){for(let i=0;i<9;i++)swish(a,t+i*.055+Math.random()*.01,.07,.3);slap(a,t+.55,.5)}
+  else if(k==='win'){tone(a,t,660,.28,.12);tone(a,t+.09,990,.34,.1)}
+  else if(k==='lose'){tone(a,t,300,.3,.09,'triangle');tone(a,t+.1,220,.4,.08,'triangle')}
+  else if(k==='fan'){[523,659,784,1046].forEach((f,i)=>tone(a,t+i*.11,f,.5,.11))}
+  else if(k==='sad'){[392,349,294,247].forEach((f,i)=>tone(a,t+i*.14,f,.5,.09,'triangle'))}
+}
+document.addEventListener('pointerdown',()=>{if(ST.opts.sound)ac()},{once:true});
 
 /* ---------- bot ---------- */
 const LV=[['آسان',0],['متوسط',1],['سخت',2],['حرفه‌ای',3]];
@@ -177,6 +219,7 @@ function pol(S,seat){
   return dis();
 }
 function liveS(){const R=G.R;return{hands:R.hands,trick:R.trick,trump:R.trump,pm:R.pm,hakem:G.hakem}}
+function mkctx(seat){const R=G.R;return{seat,hands:R.hands.map(h=>h.slice()),trick:R.trick.slice(),trump:R.trump,pm:Object.assign({},R.pm),voids:R.voids.map(v=>Object.assign({},v)),tricks:R.tricks.slice(),leader:R.leader,hakem:G.hakem}}
 function rollout(S,leader){
   const out=[0,0];let ld=leader;
   for(;;){
@@ -189,37 +232,39 @@ function rollout(S,leader){
   }
   return out;
 }
-function determinize(me){
-  const R=G.R,own=R.hands[me],pool=[];
-  for(const s of SU)for(let r=2;r<=14;r++){if(!R.pm[s+r]&&!own.some(c=>c.s===s&&c.r===r))pool.push({s,r})}
-  const others=[0,1,2,3].filter(x=>x!==me).sort((x,y)=>Object.keys(R.voids[y]).length-Object.keys(R.voids[x]).length);
+function determinize(x0){
+  const me=x0.seat,own=x0.hands[me],pool=[];
+  for(const s of SU)for(let r=2;r<=14;r++){if(!x0.pm[s+r]&&!own.some(c=>c.s===s&&c.r===r))pool.push({s,r})}
+  const others=[0,1,2,3].filter(x=>x!==me).sort((x,y)=>Object.keys(x0.voids[y]).length-Object.keys(x0.voids[x]).length);
   for(let att=0;att<40;att++){
     for(let i=pool.length-1;i>0;i--){const j=rnd(i+1);[pool[i],pool[j]]=[pool[j],pool[i]]}
     const used=new Array(pool.length).fill(false),out={};let ok=true;
-    for(const x of others){const need=R.hands[x].length;out[x]=[];for(let i=0;i<pool.length&&out[x].length<need;i++){if(!used[i]&&!R.voids[x][pool[i].s]){used[i]=true;out[x].push(pool[i])}}if(out[x].length<need){ok=false;break}}
+    for(const x of others){const need=x0.hands[x].length;out[x]=[];for(let i=0;i<pool.length&&out[x].length<need;i++){if(!used[i]&&!x0.voids[x][pool[i].s]){used[i]=true;out[x].push(pool[i])}}if(out[x].length<need){ok=false;break}}
     if(ok)return out;
   }
-  const out={};let k=0;for(const x of others){out[x]=pool.slice(k,k+R.hands[x].length);k+=R.hands[x].length}return out;
+  const out={};let k=0;for(const x of others){out[x]=pool.slice(k,k+x0.hands[x].length);k+=x0.hands[x].length}return out;
 }
-async function mcPlay(seat,budget,g){
-  const R=G.R,h=R.hands[seat],legal=legalFor(h,R.trick);if(legal.length===1)return legal[0];
-  const team=seat%2,sc=legal.map(()=>0);let n=0,t0=performance.now(),lt=t0;
+async function mcCore(x0,budget,g){
+  const seat=x0.seat,h=x0.hands[seat],legal=legalFor(h,x0.trick),sc=legal.map(()=>0);
+  if(legal.length===1)return{legal,sc,n:1,best:legal[0]};
+  const team=seat%2;let n=0,t0=performance.now(),lt=t0;
   while(n<10||performance.now()-t0<budget){
-    const dh=determinize(seat);
+    const dh=determinize(x0);
     legal.forEach((c,i)=>{
       const hands=[0,1,2,3].map(x=>x===seat?h.filter(y=>!(y.s===c.s&&y.r===c.r)):dh[x].slice());
-      const S={hands,trick:R.trick.concat([{s:seat,c}]),trump:R.trump,pm:Object.assign({},R.pm),hakem:G.hakem};S.pm[c.s+c.r]=1;
-      let ld=R.leader,tw=[R.tricks[0],R.tricks[1]];
+      const S={hands,trick:x0.trick.concat([{s:seat,c}]),trump:x0.trump,pm:Object.assign({},x0.pm),hakem:x0.hakem};S.pm[c.s+c.r]=1;
+      let ld=x0.leader,tw=[x0.tricks[0],x0.tricks[1]];
       if(S.trick.length===4){const w=winnerOf(S.trick,S.trump).s;tw[w%2]++;S.trick=[];ld=w}
       const o=rollout(S,ld),tot=tw[team]+o[team];
       sc[i]+=(tot>=7?1:0)+.04*tot;
     });
     n++;
-    if(performance.now()-lt>35){await sleepRaw(0);lt=performance.now();if(G!==g)return legal[0]}
+    if(performance.now()-lt>35){await sleepRaw(0);lt=performance.now();if(G!==g)break}
     if(n>4000)break;
   }
-  let bi=0;for(let i=1;i<sc.length;i++)if(sc[i]>sc[bi])bi=i;return legal[bi];
+  let bi=0;for(let i=1;i<sc.length;i++)if(sc[i]>sc[bi])bi=i;return{legal,sc,n,best:legal[bi]};
 }
+async function mcPlay(seat,budget,g){return (await mcCore(mkctx(seat),budget,g)).best}
 async function botChoose(seat,g){
   const lv=ST.opts.level,legal=legalFor(G.R.hands[seat],G.R.trick);
   if(legal.length===1)return legal[0];
@@ -227,50 +272,103 @@ async function botChoose(seat,g){
   if(lv===1)return pol(liveS(),seat);
   return mcPlay(seat,lv===2?450:1400,g);
 }
+/* ---------- save / resume ---------- */
+const SAVE='hokm.save';
+function loadSave(){try{const s=JSON.parse(localStorage.getItem(SAVE)||'null');return s&&s.score?s:null}catch(e){return null}}
+function clearSave(){try{localStorage.removeItem(SAVE)}catch(e){}}
+function saveGame(t,leader){try{const R=G.R;localStorage.setItem(SAVE,JSON.stringify({names:NAMES.slice(1),score:G.score,hakem:G.hakem,t,leader,R:{hands:R.hands,trump:R.trump,tricks:R.tricks,wins:R.wins,pm:R.pm,voids:R.voids,played:R.played,last:R.last,hist:R.hist,deal:R.deal}}))}catch(e){}}
+function savePending(g,nh){try{localStorage.setItem(SAVE,JSON.stringify({names:NAMES.slice(1),score:g.score,hakem:nh,pending:true}))}catch(e){}}
+function resume(){
+  const s=loadSave();if(!s){toast('بازی ذخیره‌شده‌ای نیست');return}
+  closeModal();$('#home').hidden=true;$('#game').hidden=false;
+  NAMES[1]=s.names[0];NAMES[2]=s.names[1];NAMES[3]=s.names[2];
+  const g=G={score:s.score,hakem:s.hakem,R:null,pick:null,loop:0};
+  if(s.pending||!s.R){startRound(g,false);return}
+  g.R={dk:[],trick:[],ana:[],snap:null,undoable:false,sel:null,hint:null,turn:null,resolve:null,leader:s.leader,...s.R};
+  buildTable();renderAll();toast('ادامه‌ی بازی');
+  playTricks(g,{t:s.t,leader:s.leader,k:0});
+}
+function askNew(){
+  if(!loadSave()&&!G){newGame();return}
+  modal('<h2>بازی تازه؟</h2><p style="text-align:center">بازی فعلی حذف می‌شود.</p><div class="row"><button class="pill" id="m_y">بازی تازه</button><button class="pill soft" id="m_c">انصراف</button></div>',b=>{$('#m_y',b).onclick=()=>{clearSave();newGame()};$('#m_c',b).onclick=closeModal});
+}
+
 /* ---------- game flow ---------- */
 function newGame(){
   closeModal();$('#home').hidden=true;$('#game').hidden=false;
   const pl=POOL.slice().sort(()=>Math.random()-.5);NAMES[1]=pl[0];NAMES[2]=pl[1];NAMES[3]=pl[2];
-  G={score:[0,0],hakem:rnd(4),R:null,pick:null};startRound(G);
+  G={score:[0,0],hakem:-1,R:null,pick:null,loop:0};startRound(G,true);
 }
-async function startRound(g){
-  const dk=deck(),R=g.R={hands:[0,1,2,3].map(()=>dk.splice(0,5)),dk,trump:null,trick:[],tricks:[0,0],wins:[],pm:{},voids:[{},{},{},{}],leader:g.hakem,played:[],last:null,sel:null,hint:null,turn:null,resolve:null};
+async function drawHakem(g){
+  say('اولین نفری که آس بگیره حاکمه…');let s=rnd(4);const tk=$('#tbl .trick'),dk=deck();
+  for(let i=0;i<52;i++){
+    const c=dk[i];tk.innerHTML='';const d=document.createElement('div');d.className='tc t'+s;d.innerHTML=cardH(c);tk.appendChild(d);
+    const f=[0,0];try{d.firstChild.animate([{transform:'translate('+({1:150,3:-150}[s]||0)+'px,'+({0:150,2:-150}[s]||0)+'px) scale(.7)',opacity:0},{transform:'none',opacity:1}],{duration:200*Math.max(.5,ST.opts.speed),easing:'cubic-bezier(.2,.85,.3,1)'})}catch(e){}
+    sfx('flick');
+    await sleep(c.r===14?700:230);if(G!==g)return;
+    if(c.r===14){d.classList.add('win'+(s%2));g.hakem=s;await sleep(500);if(G!==g)return;tk.innerHTML='';break}
+    s=(s+1)%4;
+  }
+  say('');
+}
+async function startRound(g,first){
+  const dk=deck(),R=g.R={hands:[0,1,2,3].map(()=>dk.splice(0,5)),dk,trump:null,trick:[],tricks:[0,0],wins:[],hist:[],deal:null,pm:{},voids:[{},{},{},{}],leader:0,played:[],last:null,sel:null,hint:null,turn:null,resolve:null,ana:[],snap:null,undoable:false};
   R.hands.forEach(h=>sortHand(h));
-  buildTable();renderAll();say(NAMES[g.hakem]==='تو'?'تو حاکمی':'حاکم: '+NAMES[g.hakem]);
+  buildTable();renderAll();
+  if(first){await sleep(400);if(G!==g)return;await drawHakem(g);if(G!==g)return;renderAll()}
+  R.leader=g.hakem;
+  say(g.hakem===0?'تو حاکمی':'حاکم: '+NAMES[g.hakem]);
   await sleep(700);if(G!==g)return;
   let tr;
   if(g.hakem===0)tr=await humanTrump();else{await sleep(900);tr=botTrump(R.hands[g.hakem])}
   if(G!==g)return;
-  R.trump=tr;toast('حکم: '+SN[tr]+' '+SYM[tr]);
+  R.trump=tr;toast('حکم: '+SN[tr]+' '+SYM[tr]);sfx('deal');
   R.hands.forEach(h=>{h.push(...dk.splice(0,8));sortHand(h,tr)});
-  renderAll(true);await sleep(900);if(G!==g)return;
-  playTricks(g);
+  R.deal=R.hands.map(h=>h.slice());renderAll(true);await sleep(900);if(G!==g)return;
+  playTricks(g,{t:0,leader:g.hakem,k:0});
 }
 function humanTrump(){
   return new Promise(res=>{const h=G.R.hands[0];
     modal('<h2>حکم را انتخاب کن</h2><div class="mh">'+h.map(c=>cardH(c)).join('')+'</div><div class="sg">'+SU.map(s=>'<button data-s="'+s+'"><b class="'+(RED[s]?'red':'')+'">'+SYM[s]+'</b>'+SN[s]+'</button>').join('')+'</div>',b=>{
       $$('[data-s]',b).forEach(x=>x.onclick=()=>{closeModal();res(x.dataset.s)})})});
 }
-async function playTricks(g){
-  const R=g.R;let leader=g.hakem;
-  for(let t=0;t<13;t++){
-    R.trick=[];R.leader=leader;$('#tbl .trick').className='trick';$('#tbl .trick').innerHTML='';
-    for(let k=0;k<4;k++){
+function snapState(R){return{hands:R.hands.map(h=>h.slice()),trick:R.trick.slice(),pm:Object.assign({},R.pm),voids:R.voids.map(v=>Object.assign({},v)),played:R.played.slice(),tricks:R.tricks.slice(),wins:R.wins.slice(),last:R.last,leader:R.leader,ana:R.ana.slice(),hist:R.hist.slice()}}
+async function playTricks(g,st){
+  const R=g.R,lp=++g.loop,dead=()=>G!==g||g.loop!==lp;let leader=st.leader;
+  for(let t=st.t;t<13;t++){
+    const k0=(t===st.t)?st.k:0;
+    if(k0===0){R.trick=[];$('#tbl .trick').className='trick';$('#tbl .trick').innerHTML=''}
+    R.leader=leader;if(k0===0)saveGame(t,leader);
+    for(let k=k0;k<4;k++){
       const seat=(leader+k)%4;R.turn=seat;renderSeats();
       let c,from=null;
-      if(seat===0){R.sel=null;R.hint=null;renderHand();say('نوبت توست',1);const pr=await new Promise(r=>R.resolve=r);R.resolve=null;say('');c=pr.c;from=pr.rect}
-      else{say('');const t0=performance.now();c=await botChoose(seat,g);if(G!==g)return;const w=(450+rnd(300))*ST.opts.speed-(performance.now()-t0);if(w>0)await sleepRaw(w);if(G!==g)return}
-      if(G!==g)return;
-      const dur=doPlay(seat,c,from);await sleepRaw(dur*.85);if(G!==g)return;
+      if(seat===0){
+        R.snap={t,leader,k,s:snapState(R)};R.undoable=false;updUndo();
+        const legal=legalFor(R.hands[0],R.trick),ent={t:t+1,card:null,ev:null};
+        if(legal.length>1){R.ana.push(ent);mcCore(mkctx(0),420,g).then(r=>{ent.ev=r})}
+        R.sel=null;R.hint=null;renderHand();say('نوبت توست',1);const pr=await new Promise(r=>R.resolve=r);R.resolve=null;say('');if(dead())return;c=pr.c;from=pr.rect;ent.card=c;R.undoable=true;updUndo()}
+      else{say('');const t0=performance.now();c=await botChoose(seat,g);if(dead())return;const w=(450+rnd(300))*ST.opts.speed-(performance.now()-t0);if(w>0)await sleepRaw(w);if(dead())return}
+      const dur=doPlay(seat,c,from);await sleepRaw(dur*.85);if(dead())return;
     }
     R.turn=null;renderSeats();
-    const w=winnerOf(R.trick,R.trump).s;R.tricks[w%2]++;R.wins.push(w%2);R.last=R.trick.slice();renderHud();
-    const tk=$('#tbl .trick'),wc=$('.tc.t'+w,tk);if(wc)wc.classList.add('win'+(w%2));const lb=document.createElement('div');lb.className='tw '+(w%2?'them':'us');lb.textContent=w%2?'مال اونا':'مال ما';tk.appendChild(lb);
-    await sleep(1000);if(G!==g)return;lb.remove();
-    $('#tbl .trick').classList.add('take'+w);await sleep(430);if(G!==g)return;
+    const w=winnerOf(R.trick,R.trump).s;R.tricks[w%2]++;R.wins.push(w%2);R.last=R.trick.slice();R.hist.push({cards:R.trick.slice(),w,leader});renderHud();
+    const tk=$('#tbl .trick'),wc=$('.tc.t'+w,tk);if(wc)wc.classList.add('win'+(w%2));const lb=document.createElement('div');lb.className='tw '+(w%2?'them':'us');lb.textContent=w%2?'مال اونا':'مال ما';tk.appendChild(lb);sfx(w%2?'lose':'win');
+    await sleep(1000);if(dead())return;lb.remove();
+    $('#tbl .trick').classList.add('take'+w);await sleep(430);if(dead())return;
     leader=w;
   }
-  endRound(g);
+  R.undoable=false;R.snap=null;updUndo();endRound(g);
+}
+function updUndo(){const b=$('#b_undo');if(!b)return;const R=G&&G.R;b.hidden=!(R&&R.undoable&&ST.opts.level===0)}
+function undo(){
+  const g=G,R=g&&g.R;if(!R||!R.snap||!R.undoable||ST.opts.level!==0)return;
+  g.loop++;const sn=R.snap,s=sn.s;
+  R.hands=s.hands.map(h=>h.slice());R.trick=s.trick.slice();R.pm=Object.assign({},s.pm);R.voids=s.voids.map(v=>Object.assign({},v));R.played=s.played.slice();R.tricks=s.tricks.slice();R.wins=s.wins.slice();R.last=s.last;R.leader=s.leader;R.ana=s.ana.slice();R.hist=s.hist.slice();
+  R.resolve=null;R.sel=null;R.hint=null;R.undoable=false;
+  const tk=$('#tbl .trick');tk.className='trick';tk.innerHTML='';
+  R.trick.forEach(p=>{const d=document.createElement('div');d.className='tc t'+p.s;d.innerHTML=cardH(p.c);d.firstChild.style.transform='rotate('+(rnd(24)-12)+'deg)';tk.appendChild(d)});
+  updUndo();renderAll();toast('برگشتی');
+  playTricks(g,{t:sn.t,leader:sn.leader,k:sn.k});
 }
 function doPlay(seat,c,from){
   const R=G.R,h=R.hands[seat],i=h.findIndex(x=>same(x,c));if(i>=0)h.splice(i,1);
@@ -284,18 +382,20 @@ function doPlay(seat,c,from){
   const r0=seat===0?(from?rf*2:rnd(30)-15):(seat===1?35:seat===3?-35:rnd(20)-10);
   try{const an=cd.animate([{transform:'translate('+dx+'px,'+dy+'px) scale('+s0+') rotate('+r0+'deg)',offset:0},{transform:'translate('+dx*.1+'px,'+(dy*.1-6)+'px) scale(1.16) rotate('+rf*1.5+'deg)',offset:.72,easing:'ease-out'},{transform:'translate(0,0) scale(1) rotate('+rf+'deg)',offset:1}],{duration:dur,easing:'cubic-bezier(.2,.85,.3,1)',fill:'both'});
     an.onfinish=()=>{cd.style.transform='rotate('+rf+'deg)';an.cancel()}}catch(e){cd.style.transform='rotate('+rf+'deg)'}
-  try{navigator.vibrate&&navigator.vibrate(8)}catch(e){}
+  sfx('throw',dur/1000);setTimeout(()=>{sfx('card');try{navigator.vibrate&&navigator.vibrate(8)}catch(e){}},Math.round(dur*.74));
   renderHand();renderSeats();return dur;
 }
 function endRound(g){
   const R=g.R,wt=R.tricks[0]>=7?0:1,ht=g.hakem%2,kot=R.tricks[wt]===13,pts=kot?(wt!==ht?3:2):1;
   g.score[wt]+=pts;ST.rounds++;if(wt===0)ST.rwins++;if(kot&&wt===0)ST.kots++;
   const nh=wt===ht?g.hakem:(g.hakem+1)%4,over=g.score[wt]>=ST.opts.target;
-  if(over){ST.games++;if(wt===0)ST.wins++}save();renderHud();
+  if(over)clearSave();else savePending(g,nh);
+  if(over){ST.games++;if(wt===0)ST.wins++;const L=ST.lvs[ST.opts.level]=ST.lvs[ST.opts.level]||{g:0,w:0};L.g++;if(wt===0)L.w++;ST.hist.unshift({d:Date.now(),lv:ST.opts.level,s:g.score.slice(),w:wt===0});ST.hist=ST.hist.slice(0,40)}save();renderHud();sfx(wt===0?'fan':'sad');
   const msg=(wt===0?'این دست را بردید':'این دست را باختید');
   modal('<div class="big'+(kot?' kt':'')+'">'+(kot?'کُت!':(wt===0?'بردید 🎉':'باختید'))+'</div><p style="text-align:center">'+msg+' · دست‌ها: <b class="en">'+R.tricks[0]+' - '+R.tricks[1]+'</b>'+(pts>1?'<br>امتیاز '+(kot&&wt!==ht?'کُتِ حاکم ':'')+'<b class="en">+'+pts+'</b>':'')+'</p><div class="stt two"><div><b>'+g.score[0]+'</b><small>ما</small></div><div><b>'+g.score[1]+'</b><small>اونا</small></div></div>'
    +(over?'<div class="big" style="font-size:30px">'+(wt===0?'برنده‌ی بازی شدید!':'این بازی را باختید')+'</div><div class="row"><button class="pill" id="m_new">بازی تازه</button><button class="pill soft" id="m_home">خانه</button></div>'
-         :'<p style="text-align:center">دست بعد حاکم: <b>'+NAMES[nh]+'</b></p><div class="row"><button class="pill" id="m_go">دست بعدی</button></div>'),b=>{
+         :'<p style="text-align:center">دست بعد حاکم: <b>'+NAMES[nh]+'</b></p><div class="row"><button class="pill" id="m_go">دست بعدی</button></div>')+'<div class="row"><button class="pill soft" id="m_an">تحلیل این دست</button><button class="pill soft" id="m_rp">بازپخش</button></div>',b=>{
+    const an=$('#m_an',b);if(an)an.onclick=()=>analysis(g);const rp=$('#m_rp',b);if(rp)rp.onclick=()=>replay(g);
     const go=$('#m_go',b);if(go)go.onclick=()=>{closeModal();g.hakem=nh;startRound(g)};
     const n=$('#m_new',b);if(n)n.onclick=newGame;const hm=$('#m_home',b);if(hm)hm.onclick=goHome;
   });
@@ -305,7 +405,7 @@ function endRound(g){
 function buildTable(){
   $('#tbl').innerHTML='<div class="seat s2" id="st2"></div><div class="seat s1 sd" id="st1"></div><div class="seat s3 sd" id="st3"></div><div class="trick" id="trk"></div>';
   $('#hud').innerHTML='<button class="rb glass" id="b_menu" aria-label="menu">'+svg('menu')+'</button><div class="grow"><div class="sc glass"><span>ما</span><b id="h_s0">0</b><span>·</span><b id="h_s1">0</b><span>اونا</span></div><div class="tr glass" id="h_tr"></div></div><button class="rb glass" id="b_hint" aria-label="hint">'+svg('bulb')+'</button><button class="rb glass" id="b_last" aria-label="last">'+svg('back')+'</button>';
-  $('#b_menu').onclick=menu;$('#b_hint').onclick=hint;$('#b_last').onclick=lastTrick;
+  $('#b_menu').onclick=menu;$('#b_undo').onclick=undo;$('#b_hint').onclick=hint;$('#b_last').onclick=lastTrick;
 }
 function renderAll(deal){renderHud();renderSeats();renderHand(deal)}
 function renderHud(){
@@ -359,23 +459,62 @@ function hint(){const R=G&&G.R;if(!R||!R.resolve||R.turn!==0){toast('وقتی ن
 function lastTrick(){const R=G&&G.R;if(!R||!R.last){toast('هنوز دستی تمام نشده');return}
   modal('<h2>دست قبلی</h2><div class="mh" style="height:auto;gap:8px;justify-content:center;flex-wrap:wrap">'+R.last.map(p=>'<div style="text-align:center">'+cardH(p.c)+'<div style="font-size:12px;margin-top:4px">'+esc(NAMES[p.s])+'</div></div>').join('')+'</div><div class="row"><button class="pill soft" id="m_c">بستن</button></div>',b=>$('#m_c',b).onclick=closeModal)}
 function menu(){
-  modal('<h2>منو</h2><div class="row"><button class="pill soft" id="m_r">ادامه</button></div><div class="row"><button class="pill soft" id="m_o">تنظیمات</button><button class="pill soft" id="m_u">قوانین</button></div><div class="row"><button class="pill soft" id="m_n">بازی تازه</button><button class="pill soft" id="m_h">خانه</button></div>',b=>{
-    $('#m_r',b).onclick=closeModal;$('#m_o',b).onclick=settings;$('#m_u',b).onclick=rules;$('#m_n',b).onclick=newGame;$('#m_h',b).onclick=goHome})}
+  modal('<h2>منو</h2><div class="row"><button class="pill soft" id="m_r">ادامه</button></div><div class="row"><button class="pill soft" id="m_o">تنظیمات</button><button class="pill soft" id="m_u">قوانین</button></div><div class="row"><button class="pill soft" id="m_t">تاریخچه</button></div><div class="row"><button class="pill soft" id="m_n">بازی تازه</button><button class="pill soft" id="m_h">خانه</button></div>',b=>{
+    $('#m_r',b).onclick=closeModal;$('#m_o',b).onclick=settings;$('#m_u',b).onclick=rules;$('#m_t',b).onclick=histM;$('#m_n',b).onclick=askNew;$('#m_h',b).onclick=goHome})}
 function settings(){
   const seg=(k,arr)=>'<div class="seg">'+arr.map(a=>'<button class="chip'+(ST.opts[k]===a[0]?' on':'')+'" data-k="'+k+'" data-v="'+a[0]+'">'+a[1]+'</button>').join('')+'</div>';
-  modal('<h2>تنظیمات</h2><div class="set"><label>سطح بازی (ربات‌ها)</label>'+seg('level',LV.map(x=>[x[1],x[0]]))+'</div><div class="set"><label>سرعت ربات‌ها</label>'+seg('speed',[[.5,'سریع'],[1,'معمولی'],[1.7,'آهسته']])+'</div><div class="set"><label>امتیاز پایان بازی</label>'+seg('target',[[3,'3'],[5,'5'],[7,'7'],[11,'11']])+'</div><div class="set"><label>رنگ میز</label>'+seg('table',[['green','سبز'],['navy','سرمه‌ای'],['wine','زرشکی']])+'</div><div class="row"><button class="pill" id="m_c">تأیید</button></div>',b=>{
-    $$('[data-k]',b).forEach(x=>x.onclick=()=>{const k=x.dataset.k;let v=x.dataset.v;if(k==='speed'||k==='target'||k==='level')v=+v;ST.opts[k]=v;if(k==='table')document.documentElement.dataset.table=v;save();$$('[data-k="'+k+'"]',b).forEach(y=>y.classList.toggle('on',y===x))});
+  modal('<h2>تنظیمات</h2><div class="set"><label>سطح بازی (ربات‌ها)</label>'+seg('level',LV.map(x=>[x[1],x[0]]))+'</div><div class="set"><label>سرعت ربات‌ها</label>'+seg('speed',[[.5,'سریع'],[1,'معمولی'],[1.7,'آهسته']])+'</div><div class="set"><label>امتیاز پایان بازی</label>'+seg('target',[[3,'3'],[5,'5'],[7,'7'],[11,'11']])+'</div><div class="set"><label>رنگ میز</label>'+seg('table',[['green','سبز'],['navy','سرمه‌ای'],['wine','زرشکی'],['purple','بنفش'],['teal','فیروزه‌ای'],['char','زغالی']])+'</div><div class="set"><label>پشت کارت</label>'+seg('back',[['blue','آبی'],['red','قرمز'],['gold','طلایی'],['dark','مشکی']])+'</div><div class="set"><label>اندازه‌ی عدد روی کارت</label>'+seg('face',[['classic','معمولی'],['big','درشت']])+'</div><div class="set"><label>صدا</label>'+seg('sound',[[1,'روشن'],[0,'خاموش']])+'</div><div class="row"><button class="pill" id="m_c">تأیید</button></div>',b=>{
+    $$('[data-k]',b).forEach(x=>x.onclick=()=>{const k=x.dataset.k;let v=x.dataset.v;if(k==='speed'||k==='target'||k==='level'||k==='sound')v=+v;ST.opts[k]=v;if(k==='table'||k==='back'||k==='face')document.documentElement.dataset[k]=v;if(k==='level')updUndo();save();$$('[data-k="'+k+'"]',b).forEach(y=>y.classList.toggle('on',y===x))});
     $('#m_c',b).onclick=()=>{closeModal();if(G&&!$('#game').hidden){}};
   });
 }
 function rules(){
   modal('<h2>قوانین حکم</h2><p>• چهار نفر در دو تیم بازی می‌کنند؛ تو و نیلوفر هم‌تیمی هستید.<br>• حاکم ۵ کارت اول را می‌بیند و خال حکم را انتخاب می‌کند؛ بعد بقیه‌ی کارت‌ها پخش می‌شود (هر نفر ۱۳ کارت).<br>• حاکم اولین دست را شروع می‌کند. باید خال کارت اول را بازی کنی؛ اگر نداری هر کارتی (مثلاً حکم برای بُریدن) می‌توانی بیاندازی.<br>• بالاترین حکم، یا اگر حکمی نبود بالاترین کارتِ هم‌خال، دست را می‌برد.<br>• هر تیم که ۷ دست یا بیشتر ببرد، آن دورِ بازی (دست) را برده و ۱ امتیاز می‌گیرد.<br>• بردن هر ۱۳ دست «کُت» است و ۲ امتیاز دارد؛ اگر تیمِ غیرِحاکم کُت کند ۳ امتیاز می‌گیرد.<br>• اگر تیم حاکم ببرد، حاکم همان می‌ماند؛ در غیر این صورت حاکمی به نفر بعدی می‌رسد.<br>• اولین تیمی که به امتیاز هدف برسد برنده است.<br>• برای بازی کردن یک کارت، یک‌بار روی آن بزن تا بالا بیاید و بار دوم بزن تا بازی شود.</p><div class="row"><button class="pill soft" id="m_c">بستن</button></div>',b=>$('#m_c',b).onclick=closeModal);
 }
+const cm=c=>'<b class="'+(RED[c.s]?'red':'')+'" style="'+(RED[c.s]?'color:#ff8a8a':'')+'">'+RL(c.r)+SYM[c.s]+'</b>';
+function analysis(g){
+  const prev=lastModal,E=g.R.ana.filter(e=>e.ev&&e.card&&e.ev.n>=10);
+  if(!E.length){toast('چیزی برای تحلیل نیست');return}
+  const rows=E.map(e=>{const i=e.ev.legal.findIndex(x=>same(x,e.card)),mx=Math.max(...e.ev.sc),loss=i<0?0:(mx-e.ev.sc[i])/e.ev.n;return{e,loss}});
+  const good=rows.filter(r=>r.loss<=.04).length,bad=rows.filter(r=>r.loss>.07).sort((x,y)=>y.loss-x.loss).slice(0,5);
+  modal('<h2>تحلیل این دست</h2><p style="text-align:center">از <b class="en">'+rows.length+'</b> تصمیمی که داشتی، <b class="en">'+good+'</b> تا هم‌نظر با ربات «سخت» بود.</p>'
+   +(bad.length?'<div class="set">'+bad.map(r=>'<div class="glass" style="padding:10px 14px;border-radius:16px;font-size:13.5px;line-height:1.8">دست <b class="en">'+r.e.t+'</b>: '+cm(r.e.card)+' بازی کردی؛ '+cm(r.e.ev.best)+' بهتر بود <span style="color:var(--muted)">(حدود <b class="en">'+Math.round(r.loss*100)+'%</b> شانس بردن دور کمتر)</span></div>').join('')+'</div>':'<p style="text-align:center">اشتباه بزرگی ندیدم 👌</p>')
+   +'<div class="row"><button class="pill soft" id="m_c">برگشت</button></div>',b=>$('#m_c',b).onclick=()=>modal(prev.html,prev.bind));
+}
+function replay(g){
+  const prev=lastModal,R=g.R,H=R.hist,deal=R.deal;
+  if(!H||!H.length||!deal){toast('بازپخشی نیست');return}
+  let i=0,playing=false;const tr=R.trump;
+  const mc=(c,hl)=>'<span class="mc'+(RED[c.s]?' red':'')+(hl?' hl':'')+'">'+RL(c.r)+'<i>'+SYM[c.s]+'</i></span>';
+  const remaining=(seat,k)=>{const used=[];for(let j=0;j<k;j++)H[j].cards.forEach(p=>{if(p.s===seat)used.push(p.c)});const L=deal[seat].filter(c=>!used.some(u=>same(u,c)));sortHand(L,tr);return L};
+  function body(){
+    const T=H[i],inT=(s,c)=>T.cards.some(p=>p.s===s&&same(p.c,c));
+    const pos=['p0','p1','p2','p3'];
+    const diamond='<div class="rp">'+T.cards.map(p=>'<div class="p '+pos[p.s]+(p.s===T.w?' win'+(T.w%2):'')+'">'+cardH(p.c)+'<small>'+esc(NAMES[p.s])+'</small></div>').join('')+'</div>';
+    const rows=[0,1,2,3].map(s=>'<div class="rh"><small class="'+(s%2?'t':'u')+'">'+esc(NAMES[s])+'</small><div>'+remaining(s,i).map(c=>mc(c,inT(s,c))).join('')+'</div></div>').join('');
+    $('#rp_b').innerHTML='<p style="text-align:center;margin:0">دست <b class="en">'+(i+1)+'</b> از <b class="en">'+H.length+'</b> · برنده: <b>'+esc(NAMES[T.w])+'</b> <span style="color:'+(T.w%2?'#ff9fb2':'#7dd3ff')+'">('+(T.w%2?'مال اونا':'مال ما')+')</span></p>'+diamond+rows;
+    $('#rp_s').value=i+1;
+  }
+  modal('<h2>بازپخش دست <span style="font-size:15px">'+(tr?'· حکم <b class="'+(RED[tr]?'red':'')+'" style="'+(RED[tr]?'color:#ff8a8a':'')+'">'+SYM[tr]+'</b>':'')+'</span></h2><div id="rp_b" class="set"></div><input type="range" id="rp_s" min="1" max="'+H.length+'" value="1" style="direction:ltr;width:100%"><div class="row"><button class="pill soft" id="rp_p">قبلی</button><button class="pill" id="rp_pl">پخش</button><button class="pill soft" id="rp_n">بعدی</button></div><div class="row"><button class="pill soft" id="m_c">برگشت</button></div>',b=>{
+    body();
+    const go=d=>{i=Math.max(0,Math.min(H.length-1,i+d));body()};
+    const stop=()=>{playing=false;clearInterval(rpT);$('#rp_pl',b).textContent='پخش'};
+    $('#rp_p',b).onclick=()=>{stop();go(-1)};$('#rp_n',b).onclick=()=>{stop();go(1)};
+    $('#rp_s',b).oninput=e=>{stop();i=+e.target.value-1;body()};
+    $('#rp_pl',b).onclick=()=>{if(playing){stop();return}if(i>=H.length-1)i=-1;playing=true;$('#rp_pl',b).textContent='توقف';rpT=setInterval(()=>{if(i>=H.length-1){stop();return}go(1)},1500)};
+    $('#m_c',b).onclick=()=>{clearInterval(rpT);modal(prev.html,prev.bind)};
+  });
+}
+function histM(){
+  let fd=t=>'';try{const f=new Intl.DateTimeFormat('fa-IR-u-ca-persian-nu-latn',{month:'short',day:'numeric'});fd=t=>f.format(new Date(t))}catch(e){}
+  const lv=LV.map(x=>{const s=ST.lvs[x[1]]||{g:0,w:0};return '<div><b>'+s.w+'/'+s.g+'</b><small>'+x[0]+'</small></div>'}).join('');
+  modal('<h2>تاریخچه</h2><div class="stt">'+lv+'</div>'+(ST.hist.length?'<div class="set" style="max-height:44vh;overflow:auto">'+ST.hist.map(h=>'<div class="glass" style="padding:8px 14px;border-radius:14px;display:flex;justify-content:space-between;align-items:center;font-size:13px"><span style="color:'+(h.w?'#7dd3ff':'#ff9fb2')+'">'+(h.w?'برد':'باخت')+'</span><b class="en">'+h.s[0]+' - '+h.s[1]+'</b><span style="color:var(--muted)">'+LV[h.lv][0]+' · '+fd(h.d)+'</span></div>').join('')+'</div>':'<p style="text-align:center">هنوز بازی تمام‌شده‌ای نداری.</p>')+'<div class="row"><button class="pill soft" id="m_c">بستن</button></div>',b=>$('#m_c',b).onclick=closeModal);
+}
 function goHome(){closeModal();G=null;$('#game').hidden=true;$('#home').hidden=false;renderHome()}
 function renderHome(){
-  const h=$('#home');
-  h.innerHTML='<h1 class="ttl">حکم</h1><div class="suits"><i>♠</i><i class="r">♥</i><i>♣</i><i class="r">♦</i></div><div class="hm glass"><div class="set"><label>سطح بازی</label><div class="seg">'+LV.map(x=>'<button class="chip'+(ST.opts.level===x[1]?' on':'')+'" data-lv="'+x[1]+'">'+x[0]+'</button>').join('')+'</div></div><button class="pill" id="h_new">بازی تازه</button><button class="pill soft" id="h_set">تنظیمات</button><button class="pill soft" id="h_rul">قوانین</button></div><div class="hm glass" style="padding:14px"><div class="stt"><div><b>'+ST.games+'</b><small>بازی</small></div><div><b>'+ST.wins+'</b><small>برد</small></div><div><b>'+ST.rwins+'/'+ST.rounds+'</b><small>دست برده</small></div><div><b>'+ST.kots+'</b><small>کُت</small></div></div></div>';
-  $$('[data-lv]',h).forEach(x=>x.onclick=()=>{ST.opts.level=+x.dataset.lv;save();$$('[data-lv]',h).forEach(y=>y.classList.toggle('on',y===x))});$('#h_new').onclick=newGame;$('#h_set').onclick=settings;$('#h_rul').onclick=rules;
+  const h=$('#home'),sv=loadSave();
+  h.innerHTML='<h1 class="ttl">حکم</h1><div class="suits"><i>♠</i><i class="r">♥</i><i>♣</i><i class="r">♦</i></div><div class="hm glass"><div class="set"><label>سطح بازی</label><div class="seg">'+LV.map(x=>'<button class="chip'+(ST.opts.level===x[1]?' on':'')+'" data-lv="'+x[1]+'">'+x[0]+'</button>').join('')+'</div></div>'+(sv?'<button class="pill" id="h_res">ادامه‌ی بازی · <span class="en">'+sv.score[0]+' - '+sv.score[1]+'</span></button>':'')+'<button class="pill'+(sv?' soft':'')+'" id="h_new">بازی تازه</button><button class="pill soft" id="h_set">تنظیمات</button><button class="pill soft" id="h_rul">قوانین</button><button class="pill soft" id="h_his">تاریخچه</button></div><div class="hm glass" style="padding:14px"><div class="stt"><div><b>'+ST.games+'</b><small>بازی</small></div><div><b>'+ST.wins+'</b><small>برد</small></div><div><b>'+ST.rwins+'/'+ST.rounds+'</b><small>دست برده</small></div><div><b>'+ST.kots+'</b><small>کُت</small></div></div></div>';
+  $$('[data-lv]',h).forEach(x=>x.onclick=()=>{ST.opts.level=+x.dataset.lv;save();$$('[data-lv]',h).forEach(y=>y.classList.toggle('on',y===x))});$('#h_new').onclick=askNew;const hr=$('#h_res');if(hr)hr.onclick=resume;$('#h_set').onclick=settings;$('#h_rul').onclick=rules;$('#h_his').onclick=histM;
 }
 (function(){const A=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.App;if(!A||!A.addListener)return;
   A.addListener('backButton',()=>{if(!$('#modal').hidden){closeModal();return}if(!$('#game').hidden){menu();return}if(A.exitApp)A.exitApp()})})();
